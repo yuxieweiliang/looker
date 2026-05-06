@@ -23,6 +23,7 @@
     ],
 
     "ask": [
+      "Read(./.env*)",
       "Bash(git push *)",
       "Bash(npm install *)",
       "Bash(npx prisma migrate *)"
@@ -32,7 +33,6 @@
       "Bash(rm -rf *)",
       "Bash(sudo *)",
       "Bash(curl *)",
-      "Read(./.env*)",
       "Read(./secrets/**)",
       "Edit(./.env*)",
       "WebFetch"

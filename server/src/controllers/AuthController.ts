@@ -242,6 +242,7 @@ export class AuthController {
       }, '登录成功')
     } catch (e) {
       console.error(e)
+      return error('服务器错误', 500)
     }
   }
 

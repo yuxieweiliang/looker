@@ -11,31 +11,31 @@ TRUNCATE TABLE transactions, bank_cards, user_points, wallets, bookmarks, likes,
 -- ==================== 2. 插入用户数据 ====================
 -- 密码使用 bcrypt hash，saltRounds=10
 
-INSERT INTO users (phone, password_hash, name, avatar, bio, gender, birthday, location, vip, level, following_count, followers_count, likes_count, works_count, collections_count, created_at, updated_at) VALUES
-('13800138001', '$2a$10$Q.JXQLaTTIw3aGv9zmYzMeJ6v6LenZr8AdTB/zepEq3/87kp30b/q', '摄影师小王', 'https://picsum.photos/200/200?random=user1', '热爱摄影，记录生活中的美好瞬间。喜欢用镜头捕捉世界的色彩，分享每一个感动的时刻。', 'male', '1995-06-15', '北京市朝阳区', true, 5, 128, 3420, 12580, 156, 89, NOW(), NOW()),
-('13800138002', '$2a$10$CSodgBkZ5E3P2pvwHjWEE.TCWerd8mk3DaLNAz.ZWNxAOdzXnLdIC', '张三', 'https://picsum.photos/200/200?random=user2', '旅行达人，走遍世界各地。美食探店爱好者。', 'male', '1990-03-20', '上海市浦东新区', true, 8, 256, 5200, 23450, 312, 178, NOW(), NOW()),
-('13800138003', '$2a$10$o.f.m4QxuX39m.EH2tBgiejTRJE0Ni/pqk/EOdTSVZ36gwoI/09eW', '美食博主小美', 'https://picsum.photos/200/200?random=user3', '美食探店 | 食谱分享 | 生活记录', 'female', '1998-09-08', '广州市天河区', false, 3, 89, 1240, 5670, 78, 45, NOW(), NOW()),
-('13800138004', '$2a$10$5qgqzeywfFZEbF9L42mv0e/Dkzdl89goSk1WhuXYxEWE8e5eyd1Vm', '旅行达人阿杰', 'https://picsum.photos/200/200?random=user4', '摄影师 | 旅行博主 | 无人机爱好者', 'male', '1992-11-25', '深圳市南山区', true, 6, 189, 2890, 9870, 234, 67, NOW(), NOW()),
-('13800138005', '$2a$10$Wp4T4L1vuZBUOnE6WTAIie7cMXyLcUHDxy3k7yE1fE7uz4erV7Xly', '萌宠铲屎官', 'https://picsum.photos/200/200?random=user5', '家有喵主子 | 日常分享 | 萌宠摄影', 'female', '1996-04-12', '成都市锦江区', false, 4, 67, 890, 4560, 123, 34, NOW(), NOW()),
-('13800138006', '$2a$10$/C3DAUNdbIiqGdyBts0olOzgbIyMDpKXqnS3M7xF66kBoLwR28mu.', '穿搭时尚达人', 'https://picsum.photos/200/200?random=user6', '时尚博主 | 穿搭分享 | 街拍达人', 'female', '1994-07-30', '杭州市西湖区', true, 7, 234, 6780, 15670, 289, 156, NOW(), NOW()),
-('13800138007', '$2a$10$TgjL2kqCdmojZw3b8DJkoe2ev7vvO2zgAyfe061o28HyMP0Kvvrae', '街拍摄影师', 'https://picsum.photos/200/200?random=user7', '街头人文纪实 | 城市记录者', 'male', '1988-12-05', '重庆市渝中区', false, 5, 156, 1890, 6780, 167, 89, NOW(), NOW()),
-('13800138008', '$2a$10$se4rtewDWyWjX/oneug32eBNU23ABnKhr9O340qpZ07Yqq0m0uR7W', '生活记录者', 'https://picsum.photos/200/200?random=user8', '记录生活点滴 | 分享美好瞬间', 'unknown', NULL, '武汉市江汉区', false, 2, 45, 230, 1230, 56, 23, NOW(), NOW());
+INSERT INTO users (id, phone, password_hash, name, avatar, bio, gender, birthday, location, vip, level, following_count, followers_count, likes_count, works_count, collections_count, created_at, updated_at) VALUES
+('user-001', '13800138001', '$2a$10$Q.JXQLaTTIw3aGv9zmYzMeJ6v6LenZr8AdTB/zepEq3/87kp30b/q', '摄影师小王', 'https://picsum.photos/200/200?random=user1', '热爱摄影，记录生活中的美好瞬间。喜欢用镜头捕捉世界的色彩，分享每一个感动的时刻。', 'male', '1995-06-15', '北京市朝阳区', true, 5, 128, 3420, 12580, 156, 89, NOW(), NOW()),
+('user-002', '13800138002', '$2a$10$CSodgBkZ5E3P2pvwHjWEE.TCWerd8mk3DaLNAz.ZWNxAOdzXnLdIC', '张三', 'https://picsum.photos/200/200?random=user2', '旅行达人，走遍世界各地。美食探店爱好者。', 'male', '1990-03-20', '上海市浦东新区', true, 8, 256, 5200, 23450, 312, 178, NOW(), NOW()),
+('user-003', '13800138003', '$2a$10$o.f.m4QxuX39m.EH2tBgiejTRJE0Ni/pqk/EOdTSVZ36gwoI/09eW', '美食博主小美', 'https://picsum.photos/200/200?random=user3', '美食探店 | 食谱分享 | 生活记录', 'female', '1998-09-08', '广州市天河区', false, 3, 89, 1240, 5670, 78, 45, NOW(), NOW()),
+('user-004', '13800138004', '$2a$10$5qgqzeywfFZEbF9L42mv0e/Dkzdl89goSk1WhuXYxEWE8e5eyd1Vm', '旅行达人阿杰', 'https://picsum.photos/200/200?random=user4', '摄影师 | 旅行博主 | 无人机爱好者', 'male', '1992-11-25', '深圳市南山区', true, 6, 189, 2890, 9870, 234, 67, NOW(), NOW()),
+('user-005', '13800138005', '$2a$10$Wp4T4L1vuZBUOnE6WTAIie7cMXyLcUHDxy3k7yE1fE7uz4erV7Xly', '萌宠铲屎官', 'https://picsum.photos/200/200?random=user5', '家有喵主子 | 日常分享 | 萌宠摄影', 'female', '1996-04-12', '成都市锦江区', false, 4, 67, 890, 4560, 123, 34, NOW(), NOW()),
+('user-006', '13800138006', '$2a$10$/C3DAUNdbIiqGdyBts0olOzgbIyMDpKXqnS3M7xF66kBoLwR28mu.', '穿搭时尚达人', 'https://picsum.photos/200/200?random=user6', '时尚博主 | 穿搭分享 | 街拍达人', 'female', '1994-07-30', '杭州市西湖区', true, 7, 234, 6780, 15670, 289, 156, NOW(), NOW()),
+('user-007', '13800138007', '$2a$10$TgjL2kqCdmojZw3b8DJkoe2ev7vvO2zgAyfe061o28HyMP0Kvvrae', '街拍摄影师', 'https://picsum.photos/200/200?random=user7', '街头人文纪实 | 城市记录者', 'male', '1988-12-05', '重庆市渝中区', false, 5, 156, 1890, 6780, 167, 89, NOW(), NOW()),
+('user-008', '13800138008', '$2a$10$se4rtewDWyWjX/oneug32eBNU23ABnKhr9O340qpZ07Yqq0m0uR7W', '生活记录者', 'https://picsum.photos/200/200?random=user8', '记录生活点滴 | 分享美好瞬间', 'unknown', NULL, '武汉市江汉区', false, 2, 45, 230, 1230, 56, 23, NOW(), NOW());
 
 -- ==================== 3. 插入话题数据 ====================
-INSERT INTO topics (name, cover, category, count, description, created_at, updated_at) VALUES
-('春日摄影', 'https://picsum.photos/200/200?random=topic1', '风景', 2341, '记录春天的美好瞬间', NOW(), NOW()),
-('美食探店', 'https://picsum.photos/200/200?random=topic2', '美食', 1856, '发现身边的美味', NOW(), NOW()),
-('旅行日记', 'https://picsum.photos/200/200?random=topic3', '旅行', 3421, '分享旅途风景', NOW(), NOW()),
-('萌宠日常', 'https://picsum.photos/200/200?random=topic4', '宠物', 4523, '铲屎官的日常', NOW(), NOW()),
-('穿搭分享', 'https://picsum.photos/200/200?random=topic5', '时尚', 2134, '每日穿搭灵感', NOW(), NOW()),
-('生活记录', 'https://picsum.photos/200/200?random=topic6', '生活', 5632, '记录生活点滴', NOW(), NOW()),
-('人像摄影', 'https://picsum.photos/200/200?random=topic7', '摄影', 1280, '人像摄影技巧分享', NOW(), NOW()),
-('街拍摄影', 'https://picsum.photos/200/200?random=topic8', '摄影', 980, '街头人文纪实', NOW(), NOW());
+INSERT INTO topics (id, name, cover, category, count, description, created_at, updated_at) VALUES
+('topic-001', '春日摄影', 'https://picsum.photos/200/200?random=topic1', '风景', 2341, '记录春天的美好瞬间', NOW(), NOW()),
+('topic-002', '美食探店', 'https://picsum.photos/200/200?random=topic2', '美食', 1856, '发现身边的美味', NOW(), NOW()),
+('topic-003', '旅行日记', 'https://picsum.photos/200/200?random=topic3', '旅行', 3421, '分享旅途风景', NOW(), NOW()),
+('topic-004', '萌宠日常', 'https://picsum.photos/200/200?random=topic4', '宠物', 4523, '铲屎官的日常', NOW(), NOW()),
+('topic-005', '穿搭分享', 'https://picsum.photos/200/200?random=topic5', '时尚', 2134, '每日穿搭灵感', NOW(), NOW()),
+('topic-006', '生活记录', 'https://picsum.photos/200/200?random=topic6', '生活', 5632, '记录生活点滴', NOW(), NOW()),
+('topic-007', '人像摄影', 'https://picsum.photos/200/200?random=topic7', '摄影', 1280, '人像摄影技巧分享', NOW(), NOW()),
+('topic-008', '街拍摄影', 'https://picsum.photos/200/200?random=topic8', '摄影', 980, '街头人文纪实', NOW(), NOW());
 
 -- ==================== 4. 插入动态数据 ====================
 -- 动态 1
-INSERT INTO feeds (user_id, content, images, topics, location, latitude, longitude, status, views, likes, comments, shares, collections, created_at, updated_at) VALUES
-('user-001', '今天去了公园拍摄，春天的花开得太美了！#春日摄影 #生活记录',
+INSERT INTO feeds (id, user_id, content, images, topics, location, latitude, longitude, status, views, likes, comments, shares, collections, created_at, updated_at) VALUES
+('feed-001', 'user-001', '今天去了公园拍摄，春天的花开得太美了！#春日摄影 #生活记录',
 '[
   {"id": "img-1-0", "url": "https://picsum.photos/800/800?random=1-0", "width": 800, "height": 800},
   {"id": "img-1-1", "url": "https://picsum.photos/800/800?random=1-1", "width": 800, "height": 800},
@@ -202,11 +202,11 @@ INSERT INTO bookmarks (id, user_id, feed_id, created_at) VALUES
 ('bookmark-005', 'user-005', 'feed-006', '2024-04-17 13:30:00');
 
 -- ==================== 9. 插入银行卡数据 ====================
-INSERT INTO bank_cards (id, user_id, bank_name, card_type, card_no, holder_name, is_default, bg_color, created_at, updated_at) VALUES
-('card-001', 'user-002', '工商银行', '储蓄卡', '8888', '张三', true, 'linear-gradient(135deg, #c41e3a 0%, #e31837 100%)', NOW(), NOW()),
-('card-002', 'user-002', '招商银行', '信用卡', '6666', '张三', false, 'linear-gradient(135deg, #e60012 0%, #ff1744 100%)', NOW(), NOW()),
-('card-003', 'user-002', '支付宝', '余额', '9999', '张三', false, 'linear-gradient(135deg, #1677ff 0%, #4096ff 100%)', NOW(), NOW()),
-('card-004', 'user-001', '建设银行', '储蓄卡', '1234', '摄影师小王', true, 'linear-gradient(135deg, #0066b3 0%, #0099cc 100%)', NOW(), NOW());
+INSERT INTO bank_cards (id, user_id, bank_name, card_type, card_number, card_number_mask, holder_name, is_default, bg_color, created_at, updated_at) VALUES
+('card-001', 'user-002', '工商银行', '储蓄卡', '8888', '****8888', '张三', true, 'linear-gradient(135deg, #c41e3a 0%, #e31837 100%)', NOW(), NOW()),
+('card-002', 'user-002', '招商银行', '信用卡', '6666', '****6666', '张三', false, 'linear-gradient(135deg, #e60012 0%, #ff1744 100%)', NOW(), NOW()),
+('card-003', 'user-002', '支付宝', '余额', '9999', '****9999', '张三', false, 'linear-gradient(135deg, #1677ff 0%, #4096ff 100%)', NOW(), NOW()),
+('card-004', 'user-001', '建设银行', '储蓄卡', '1234', '****1234', '摄影师小王', true, 'linear-gradient(135deg, #0066b3 0%, #0099cc 100%)', NOW(), NOW());
 
 -- ==================== 10. 插入交易记录数据 ====================
 INSERT INTO transactions (id, user_id, title, amount, type, status, created_at, updated_at) VALUES
@@ -220,7 +220,7 @@ INSERT INTO transactions (id, user_id, title, amount, type, status, created_at, 
 ('trans-008', 'user-004', '打赏他人', 66.00, 'expense', 'completed', '2024-04-19 20:00:00', NOW());
 
 -- ==================== 11. 插入积分数据 ====================
-INSERT INTO user_points (id, user_id, points, consecutive_days, last_check_in, created_at, updated_at) VALUES
+INSERT INTO user_points (id, user_id, points, consecutive_days, last_signin_date, created_at, updated_at) VALUES
 ('points-001', 'user-001', 2580, 15, '2024-04-20', NOW(), NOW()),
 ('points-002', 'user-002', 4560, 30, '2024-04-20', NOW(), NOW()),
 ('points-003', 'user-003', 890, 5, '2024-04-19', NOW(), NOW()),

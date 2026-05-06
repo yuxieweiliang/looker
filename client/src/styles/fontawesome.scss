@@ -1,0 +1,54 @@
+/* FontAwesome 6 Free 字体定义 - iOS 兼容版本 */
+/* 使用相对路径，兼容 APP 端 */
+
+@font-face {
+  font-family: 'Font Awesome 6 Free';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url('static/fonts/fa-regular-400.ttf') format('truetype'),
+       url('static/fonts/fa-regular-400.woff2') format('woff2');
+}
+
+@font-face {
+  font-family: 'Font Awesome 6 Free';
+  font-style: normal;
+  font-weight: 900;
+  font-display: swap;
+  src: url('static/fonts/fa-solid-900.ttf') format('truetype'),
+       url('static/fonts/fa-solid-900.woff2') format('woff2');
+}
+
+/* FontAwesome 基础样式 */
+.fas,
+.far {
+  font-family: 'Font Awesome 6 Free', 'FontAwesome', sans-serif;
+  font-style: normal;
+  font-variant: normal;
+  text-rendering: auto;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  display: inline-block;
+  line-height: 1;
+}
+
+.fas {
+  font-weight: 900;
+}
+
+.far {
+  font-weight: 400;
+}
+
+/* 确保在 APP 端正确显示 */
+.app-icon {
+  font-family: 'Font Awesome 6 Free', 'FontAwesome', sans-serif !important;
+  font-style: normal !important;
+  font-variant: normal !important;
+  text-rendering: auto !important;
+  -webkit-font-smoothing: antialiased !important;
+  display: inline-flex !important;
+  align-items: center;
+  justify-content: center;
+  line-height: 1;
+}

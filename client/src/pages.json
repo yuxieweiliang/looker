@@ -1,0 +1,301 @@
+{
+  "easycom": {
+    "autoscan": true,
+    "custom": {
+      "^AppIcon": "@/components/AppIcon.vue"
+    }
+  },
+  "pages": [
+    {
+      "path": "pages/square/square",
+      "style": {
+        "navigationBarTitleText": "广场",
+        "navigationStyle": "custom"
+      }
+    },
+    {
+      "path": "pages/home/home",
+      "style": {
+        "navigationBarTitleText": "看客",
+        "navigationStyle": "custom"
+      }
+    },
+    {
+      "path": "pages/topic/topic",
+      "style": {
+        "navigationBarTitleText": "话题",
+        "navigationStyle": "custom"
+      }
+    },
+    {
+      "path": "pages/profile/profile",
+      "style": {
+        "navigationBarTitleText": "我的",
+        "navigationStyle": "custom"
+      }
+    }
+  ],
+  "subPackages": [
+    {
+      "root": "pages",
+      "pages": [
+        {
+          "path": "login/login",
+          "style": {
+            "navigationBarTitleText": "登录",
+            "navigationStyle": "custom"
+          }
+        },
+        {
+          "path": "register/register",
+          "style": {
+            "navigationBarTitleText": "注册",
+            "navigationStyle": "custom"
+          }
+        },
+        {
+          "path": "detail/detail",
+          "style": {
+            "navigationBarTitleText": "详情",
+            "navigationStyle": "custom"
+          }
+        },
+        {
+          "path": "search/search",
+          "style": {
+            "navigationBarTitleText": "搜索",
+            "navigationStyle": "custom"
+          }
+        },
+        {
+          "path": "comment/comment",
+          "style": {
+            "navigationBarTitleText": "评论",
+            "navigationStyle": "custom"
+          }
+        },
+        {
+          "path": "user/user",
+          "style": {
+            "navigationBarTitleText": "用户主页",
+            "navigationStyle": "custom"
+          }
+        },
+        {
+          "path": "topic/topic-select",
+          "style": {
+            "navigationBarTitleText": "选择话题",
+            "navigationStyle": "custom"
+          }
+        },
+        {
+          "path": "topic/location-select",
+          "style": {
+            "navigationBarTitleText": "选择位置",
+            "navigationStyle": "custom"
+          }
+        },
+        {
+          "path": "topic/publish",
+          "style": {
+            "navigationBarTitleText": "发布话题",
+            "navigationStyle": "custom"
+          }
+        },
+        {
+          "path": "topic/draft",
+          "style": {
+            "navigationBarTitleText": "草稿箱",
+            "navigationStyle": "custom"
+          }
+        },
+        {
+          "path": "profile/works",
+          "style": {
+            "navigationBarTitleText": "我的作品",
+            "navigationStyle": "custom"
+          }
+        },
+        {
+          "path": "profile/edit",
+          "style": {
+            "navigationBarTitleText": "编辑资料",
+            "navigationStyle": "custom"
+          }
+        },
+        {
+          "path": "profile/social",
+          "style": {
+            "navigationBarTitleText": "社交",
+            "navigationStyle": "custom"
+          }
+        },
+        {
+          "path": "account/security",
+          "style": {
+            "navigationBarTitleText": "账号安全",
+            "navigationStyle": "custom"
+          }
+        },
+        {
+          "path": "account/wallet",
+          "style": {
+            "navigationBarTitleText": "我的钱包",
+            "navigationStyle": "custom"
+          }
+        },
+        {
+          "path": "account/transactions",
+          "style": {
+            "navigationBarTitleText": "交易记录",
+            "navigationStyle": "custom"
+          }
+        },
+        {
+          "path": "account/bank-cards",
+          "style": {
+            "navigationBarTitleText": "银行卡",
+            "navigationStyle": "custom"
+          }
+        },
+        {
+          "path": "account/coupons",
+          "style": {
+            "navigationBarTitleText": "优惠券",
+            "navigationStyle": "custom"
+          }
+        },
+        {
+          "path": "account/exchange",
+          "style": {
+            "navigationBarTitleText": "积分兑换",
+            "navigationStyle": "custom"
+          }
+        },
+        {
+          "path": "settings/privacy",
+          "style": {
+            "navigationBarTitleText": "隐私设置",
+            "navigationStyle": "custom"
+          }
+        },
+        {
+          "path": "settings/index",
+          "style": {
+            "navigationBarTitleText": "通用设置",
+            "navigationStyle": "custom"
+          }
+        },
+        {
+          "path": "settings/task",
+          "style": {
+            "navigationBarTitleText": "任务中心",
+            "navigationStyle": "custom"
+          }
+        },
+        {
+          "path": "settings/phone",
+          "style": {
+            "navigationBarTitleText": "修改手机号",
+            "navigationStyle": "custom"
+          }
+        },
+        {
+          "path": "settings/password",
+          "style": {
+            "navigationBarTitleText": "修改密码",
+            "navigationStyle": "custom"
+          }
+        },
+        {
+          "path": "settings/blacklist",
+          "style": {
+            "navigationBarTitleText": "黑名单",
+            "navigationStyle": "custom"
+          }
+        },
+        {
+          "path": "message/message",
+          "style": {
+            "navigationBarTitleText": "消息通知",
+            "navigationStyle": "custom"
+          }
+        },
+        {
+          "path": "about/about",
+          "style": {
+            "navigationBarTitleText": "关于我们",
+            "navigationStyle": "custom"
+          }
+        },
+        {
+          "path": "about/help-feedback",
+          "style": {
+            "navigationBarTitleText": "帮助与反馈",
+            "navigationStyle": "custom"
+          }
+        },
+        {
+          "path": "about/terms",
+          "style": {
+            "navigationBarTitleText": "用户协议",
+            "navigationStyle": "custom"
+          }
+        },
+        {
+          "path": "about/privacy",
+          "style": {
+            "navigationBarTitleText": "隐私政策",
+            "navigationStyle": "custom"
+          }
+        }
+      ]
+    }
+  ],
+  "globalStyle": {
+    "navigationBarTextStyle": "black",
+    "navigationBarTitleText": "看客",
+    "navigationBarBackgroundColor": "#ffffff",
+    "backgroundColor": "#f8f8f8",
+    "app-plus": {
+      "background": "#efeff4"
+    }
+  },
+  "tabBar": {
+    "color": "#999999",
+    "selectedColor": "#ff6b6b",
+    "borderStyle": "black",
+    "backgroundColor": "#ffffff",
+    "height": "50px",
+    "fontSize": "10px",
+    "iconWidth": "24px",
+    "spacing": "3px",
+    "list": [
+      {
+        "pagePath": "pages/home/home",
+        "iconPath": "static/images/tabbar/home.png",
+        "selectedIconPath": "static/images/tabbar/home-active.png",
+        "text": "首页"
+      },
+      {
+        "pagePath": "pages/square/square",
+        "iconPath": "static/images/tabbar/square.png",
+        "selectedIconPath": "static/images/tabbar/square-active.png",
+        "text": "广场"
+      },
+      {
+        "pagePath": "pages/topic/topic",
+        "iconPath": "static/images/tabbar/share.png",
+        "selectedIconPath": "static/images/tabbar/share-active.png",
+        "text": "话题"
+      },
+      {
+        "pagePath": "pages/profile/profile",
+        "iconPath": "static/images/tabbar/profile.png",
+        "selectedIconPath": "static/images/tabbar/profile-active.png",
+        "text": "我的"
+      }
+    ]
+  },
+  "condition": {}
+}

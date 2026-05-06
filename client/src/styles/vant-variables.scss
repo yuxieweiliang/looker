@@ -1,0 +1,22 @@
+// Vant Weapp 样式变量覆盖
+// 在 page 中定义 CSS 变量
+
+page {
+  // 主题色
+  --van-primary-color: #ff6b6b;
+  --van-success-color: #07c160;
+  --van-danger-color: #ee0a24;
+  --van-warning-color: #ff976a;
+
+  // 文字颜色
+  --van-text-color: #323233;
+  --van-text-color-2: #666666;
+  --van-text-color-3: #999999;
+
+  // 边框颜色
+  --van-border-color: #ebedf0;
+
+  // 背景色
+  --van-background-color: #f7f8fa;
+  --van-background-color-light: #fafafa;
+}

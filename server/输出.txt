@@ -1,0 +1,140 @@
+# Looker 服务端启动记录
+
+日期：2026-04-14
+
+## 1. 项目检查
+
+检查 server 目录结构和依赖：
+- 服务端框架：Express + routing-controllers
+- 数据库：PostgreSQL
+- 语言：TypeScript
+
+## 2. 发现的问题及修复
+
+### 2.1 TypeScript 类型错误修复
+
+#### 问题1：类型未导出
+**文件**：`src/types/index.ts`
+**修复**：添加类型重新导出
+```typescript
+export * from './user'
+export * from './content'
+```
+
+#### 问题2：AuthController 缺少导入
+**文件**：`src/controllers/AuthController.ts`
+**修复**：添加 verifyToken 导入
+```typescript
+import { generateToken, verifyToken } from '../utils/jwt'
+```
+
+#### 问题3：error 函数类型不匹配
+**文件**：`src/utils/response.ts`
+**修复**：使用泛型让 error 函数可以返回任意类型
+```typescript
+export function error<T = null>(message: string, code = 400): ApiResponse<T> {
+  return { code, message, data: null as T }
+}
+```
+
+#### 问题4：transaction 类型定义错误
+**文件**：`src/utils/db.ts`
+**修复**：使用 PoolClient 类型
+```typescript
+import { Pool, PoolClient } from 'pg'
+
+export async function transaction<T>(callback: (client: PoolClient) => Promise<T>): Promise<T>
+```
+
+#### 问题5：WalletController 缺少 Delete 导入
+**文件**：`src/controllers/WalletController.ts`
+**修复**：添加 Delete 装饰器导入
+```typescript
+import { JsonController, Get, Post, Delete, Body, Param, QueryParam, Authorized } from 'routing-controllers'
+```
+
+#### 问题6：JWT expiresIn 类型问题
+**文件**：`src/utils/jwt.ts`
+**修复**：强制类型转换
+```typescript
+const JWT_EXPIRES: jwt.SignOptions['expiresIn'] = (process.env.JWT_EXPIRES || '7d') as jwt.SignOptions['expiresIn']
+```
+
+#### 问题7：上传控制器回调类型
+**文件**：`src/controllers/UploadController.ts` 和 `src/controllers/UserController.ts`
+**修复**：移除显式类型注解
+```typescript
+uploadSingle(req, res, (err) => {  // 移除 : Error | null
+```
+
+#### 问题8：index.ts 参数类型
+**文件**：`src/index.ts`
+**修复**：添加 Request 和 Response 类型导入
+```typescript
+import type { Request, Response } from 'express'
+app.get('/health', (_req: Request, res: Response) => {
+```
+
+### 2.2 数据库配置
+
+- PostgreSQL 版本：15.17
+- 数据库：looker（已创建）
+- 表结构：已从 database/schema.sql 导入
+
+### 2.3 bcrypt 编译问题
+
+**问题**：bcrypt 需要编译 C++ 扩展，pnpm 默认忽略构建脚本
+**解决方案**：将 bcrypt 替换为 bcryptjs（纯 JavaScript 实现）
+
+修改文件：
+- `src/utils/crypto.ts`：import bcrypt from 'bcryptjs'
+- `package.json`：替换依赖
+
+## 3. 环境变量配置
+
+server/.env 文件配置：
+```
+DB_HOST=localhost
+DB_PORT=5432
+DB_NAME=looker
+DB_USER=postgres
+DB_PASSWORD=3342
+PORT=3000
+```
+
+## 4. 启动命令
+
+```bash
+cd /Users/fengsheng/Documents/ai/Looker/server
+npm run dev
+```
+
+## 5. 服务状态
+
+- 状态：✅ 正常运行
+- 端口：3000
+- API 前缀：/api/v1
+- 健康检查：/health
+
+## 6. 可用 API 端点
+
+- POST /api/v1/auth/send-code - 发送验证码
+- POST /api/v1/auth/login/phone - 手机号登录
+- POST /api/v1/auth/login/password - 密码登录
+- POST /api/v1/auth/register - 用户注册
+- POST /api/v1/auth/refresh - 刷新 Token
+- GET /api/v1/feeds - 获取动态列表
+- POST /api/v1/feeds - 发布动态
+- GET /api/v1/comments - 获取评论列表
+- POST /api/v1/comments - 发表评论
+- GET /api/v1/wallet - 获取钱包信息
+- 更多端点见 controllers 目录
+
+## 7. 注意事项
+
+1. JWT_SECRET 环境变量未设置，使用开发环境默认密钥（仅用于开发）
+2. 如需生产部署，请设置强密码的 JWT_SECRET
+3. 数据库表结构已导入，可直接使用
+
+---
+记录完成

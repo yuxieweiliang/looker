@@ -1,0 +1,71 @@
+{
+  "generatedAt": "2024-04-22T14:30:00.000Z",
+  "totalUsers": 8,
+  "accounts": [
+    {
+      "userId": "user-001",
+      "phone": "13800138001",
+      "name": "摄影师小王",
+      "password": "Photo2024!",
+      "level": 5,
+      "vip": true
+    },
+    {
+      "userId": "user-002",
+      "phone": "13800138002",
+      "name": "张三",
+      "password": "Zhang1234!",
+      "level": 8,
+      "vip": true
+    },
+    {
+      "userId": "user-003",
+      "phone": "13800138003",
+      "name": "美食博主小美",
+      "password": "Foodie2024@",
+      "level": 3,
+      "vip": false
+    },
+    {
+      "userId": "user-004",
+      "phone": "13800138004",
+      "name": "旅行达人阿杰",
+      "password": "Travel2024#",
+      "level": 6,
+      "vip": true
+    },
+    {
+      "userId": "user-005",
+      "phone": "13800138005",
+      "name": "萌宠铲屎官",
+      "password": "PetLover1!",
+      "level": 4,
+      "vip": false
+    },
+    {
+      "userId": "user-006",
+      "phone": "13800138006",
+      "name": "穿搭时尚达人",
+      "password": "Fashion88$",
+      "level": 7,
+      "vip": true
+    },
+    {
+      "userId": "user-007",
+      "phone": "13800138007",
+      "name": "街拍摄影师",
+      "password": "Street99&",
+      "level": 5,
+      "vip": false
+    },
+    {
+      "userId": "user-008",
+      "phone": "13800138008",
+      "name": "生活记录者",
+      "password": "Life2024*",
+      "level": 2,
+      "vip": false
+    }
+  ],
+  "notice": "此文件包含用户明文密码，仅用于开发和测试。请妥善保管，不要提交到公共版本控制。生产环境请使用更安全的密码管理方式。"
+}

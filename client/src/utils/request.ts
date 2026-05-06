@@ -28,7 +28,7 @@ export const request = <T>(options: {
       success: (res) => {
         const data = res.data as ApiResponse<T>
         if (data.code === 0 || data.code === 200) {
-          resolve(data.data)
+          resolve(data)
         } else {
           uni.showToast({
             title: data.message || '请求失败',

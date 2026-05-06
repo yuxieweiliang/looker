@@ -1,16 +1,18 @@
 -- =====================================================
 -- Looker 数据库表结构 (PostgreSQL)
+-- 统一 Schema - 兼容 mock-data 和 seed-data
 -- =====================================================
 
 -- 扩展
 CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
-CREATE EXTENSION IF NOT EXISTS "pg_trgm"; -- 用于模糊搜索
+CREATE EXTENSION IF NOT EXISTS "pg_trgm";
 
 -- =====================================================
 -- 1. 用户模块
 -- =====================================================
 
 -- 用户表
+-- id 使用 VARCHAR(50) 兼容 mock-data 中的 'user-001' 格式
 CREATE TABLE users (
     id VARCHAR(50) PRIMARY KEY,
     phone VARCHAR(20) UNIQUE,
@@ -34,7 +36,7 @@ CREATE TABLE users (
 
 -- 社交账号绑定表
 CREATE TABLE user_social_bindings (
-    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    id VARCHAR(50) PRIMARY KEY,
     user_id VARCHAR(50) NOT NULL REFERENCES users(id) ON DELETE CASCADE,
     type VARCHAR(20) NOT NULL CHECK (type IN ('wechat', 'weibo')),
     openid VARCHAR(100) NOT NULL,
@@ -47,7 +49,7 @@ CREATE TABLE user_social_bindings (
 
 -- 关注关系表
 CREATE TABLE follows (
-    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    id VARCHAR(50) PRIMARY KEY,
     follower_id VARCHAR(50) NOT NULL REFERENCES users(id) ON DELETE CASCADE,
     following_id VARCHAR(50) NOT NULL REFERENCES users(id) ON DELETE CASCADE,
     created_at TIMESTAMPTZ DEFAULT NOW(),
@@ -56,7 +58,7 @@ CREATE TABLE follows (
 
 -- 黑名单表
 CREATE TABLE blacklist (
-    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    id VARCHAR(50) PRIMARY KEY,
     user_id VARCHAR(50) NOT NULL REFERENCES users(id) ON DELETE CASCADE,
     blocked_user_id VARCHAR(50) NOT NULL REFERENCES users(id) ON DELETE CASCADE,
     created_at TIMESTAMPTZ DEFAULT NOW(),
@@ -67,13 +69,37 @@ CREATE TABLE blacklist (
 -- 2. 内容模块
 -- =====================================================
 
+-- 话题表
+-- id 使用 VARCHAR(50) 兼容 mock-data 中的 'topic-001' 格式
+CREATE TABLE topics (
+    id VARCHAR(50) PRIMARY KEY,
+    name VARCHAR(50) UNIQUE NOT NULL,
+    cover VARCHAR(500),
+    category VARCHAR(50) DEFAULT '其他',
+    count INTEGER DEFAULT 0,
+    description TEXT DEFAULT '',
+    created_at TIMESTAMPTZ DEFAULT NOW(),
+    updated_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+-- 话题关注表
+CREATE TABLE topic_follows (
+    id VARCHAR(50) PRIMARY KEY,
+    user_id VARCHAR(50) NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    topic_id VARCHAR(50) NOT NULL REFERENCES topics(id) ON DELETE CASCADE,
+    created_at TIMESTAMPTZ DEFAULT NOW(),
+    UNIQUE(user_id, topic_id)
+);
+
 -- 动态表
+-- id 使用 VARCHAR(50) 兼容 mock-data 中的 'feed-001' 格式
+-- topics 存储话题名数组，用于标签筛选
 CREATE TABLE feeds (
-    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    id VARCHAR(50) PRIMARY KEY,
     user_id VARCHAR(50) NOT NULL REFERENCES users(id) ON DELETE CASCADE,
     content TEXT,
-    images JSONB DEFAULT '[]', -- [{id, url, width, height}]
-    topics VARCHAR(50)[], -- 话题标签数组
+    images JSONB DEFAULT '[]',
+    topics VARCHAR(50)[] DEFAULT '{}',
     location VARCHAR(200),
     latitude DECIMAL(10, 8),
     longitude DECIMAL(11, 8),
@@ -87,35 +113,16 @@ CREATE TABLE feeds (
     updated_at TIMESTAMPTZ DEFAULT NOW()
 );
 
--- 话题表
-CREATE TABLE topics (
-    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
-    name VARCHAR(50) UNIQUE NOT NULL,
-    description TEXT,
-    bg_color VARCHAR(20) DEFAULT '#FFE4E1',
-    count INTEGER DEFAULT 0,
-    created_at TIMESTAMPTZ DEFAULT NOW()
-);
-
--- 话题关注表
-CREATE TABLE topic_follows (
-    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
-    user_id VARCHAR(50) NOT NULL REFERENCES users(id) ON DELETE CASCADE,
-    topic_id UUID NOT NULL REFERENCES topics(id) ON DELETE CASCADE,
-    created_at TIMESTAMPTZ DEFAULT NOW(),
-    UNIQUE(user_id, topic_id)
-);
-
--- 图片资源表（用于瀑布流推荐）
+-- 图片资源表
 CREATE TABLE photos (
-    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    id VARCHAR(50) PRIMARY KEY,
     user_id VARCHAR(50) NOT NULL REFERENCES users(id) ON DELETE CASCADE,
-    feed_id UUID REFERENCES feeds(id) ON DELETE SET NULL,
+    feed_id VARCHAR(50) REFERENCES feeds(id) ON DELETE SET NULL,
     url VARCHAR(500) NOT NULL,
     width INTEGER,
     height INTEGER,
     title VARCHAR(200),
-    category_id UUID,
+    category_id VARCHAR(50),
     likes INTEGER DEFAULT 0,
     views INTEGER DEFAULT 0,
     created_at TIMESTAMPTZ DEFAULT NOW()
@@ -123,7 +130,7 @@ CREATE TABLE photos (
 
 -- 分类表
 CREATE TABLE categories (
-    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    id VARCHAR(50) PRIMARY KEY,
     name VARCHAR(50) NOT NULL,
     icon VARCHAR(500),
     sort_order INTEGER DEFAULT 0,
@@ -135,36 +142,38 @@ CREATE TABLE categories (
 -- =====================================================
 
 -- 点赞表（支持动态和评论）
+-- id 使用 VARCHAR(50) 兼容 mock-data 中的 'like-001' 格式
 CREATE TABLE likes (
-    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    id VARCHAR(50) PRIMARY KEY,
     user_id VARCHAR(50) NOT NULL REFERENCES users(id) ON DELETE CASCADE,
-    target_id UUID NOT NULL, -- feed_id 或 comment_id
+    target_id VARCHAR(50) NOT NULL,
     target_type VARCHAR(20) NOT NULL CHECK (target_type IN ('feed', 'comment')),
     created_at TIMESTAMPTZ DEFAULT NOW(),
     UNIQUE(user_id, target_id, target_type)
 );
 
 -- 收藏表
+-- id 使用 VARCHAR(50) 兼容 mock-data 中的 'bookmark-001' 格式
 CREATE TABLE bookmarks (
-    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    id VARCHAR(50) PRIMARY KEY,
     user_id VARCHAR(50) NOT NULL REFERENCES users(id) ON DELETE CASCADE,
-    feed_id UUID NOT NULL REFERENCES feeds(id) ON DELETE CASCADE,
+    feed_id VARCHAR(50) NOT NULL REFERENCES feeds(id) ON DELETE CASCADE,
     created_at TIMESTAMPTZ DEFAULT NOW(),
     UNIQUE(user_id, feed_id)
 );
 
 -- 评论表
+-- id 使用 VARCHAR(50) 兼容 mock-data 中的 'comment-001' 格式
+-- feed_id 兼容 mock-data 结构
 CREATE TABLE comments (
-    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    id VARCHAR(50) PRIMARY KEY,
+    feed_id VARCHAR(50) NOT NULL REFERENCES feeds(id) ON DELETE CASCADE,
     user_id VARCHAR(50) NOT NULL REFERENCES users(id) ON DELETE CASCADE,
-    target_id UUID NOT NULL, -- feed_id 或 photo_id
-    target_type VARCHAR(20) NOT NULL CHECK (target_type IN ('feed', 'photo')),
     content TEXT NOT NULL,
-    parent_id UUID REFERENCES comments(id) ON DELETE CASCADE,
     likes INTEGER DEFAULT 0,
-    replies INTEGER DEFAULT 0,
-    status VARCHAR(20) DEFAULT 'active' CHECK (status IN ('active', 'deleted')),
-    created_at TIMESTAMPTZ DEFAULT NOW()
+    parent_id VARCHAR(50) REFERENCES comments(id) ON DELETE CASCADE,
+    created_at TIMESTAMPTZ DEFAULT NOW(),
+    updated_at TIMESTAMPTZ DEFAULT NOW()
 );
 
 -- =====================================================
@@ -173,15 +182,15 @@ CREATE TABLE comments (
 
 -- 消息表
 CREATE TABLE messages (
-    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
-    user_id VARCHAR(50) NOT NULL REFERENCES users(id) ON DELETE CASCADE, -- 接收者
+    id VARCHAR(50) PRIMARY KEY,
+    user_id VARCHAR(50) NOT NULL REFERENCES users(id) ON DELETE CASCADE,
     sender_id VARCHAR(50) REFERENCES users(id) ON DELETE SET NULL,
-    type VARCHAR(20) NOT NULL CHECK (type IN ('like', 'comment', 'follow', 'system')),
-    content TEXT NOT NULL,
-    target_id UUID, -- 关联的动态/评论ID
+    type VARCHAR(20) NOT NULL CHECK (type IN ('like', 'comment', 'follow', 'system', 'message')),
+    title VARCHAR(200) NOT NULL,
+    content TEXT,
+    target_id VARCHAR(50),
     target_type VARCHAR(20),
-    image VARCHAR(500), -- 预览图
-    read BOOLEAN DEFAULT FALSE,
+    is_read BOOLEAN DEFAULT FALSE,
     created_at TIMESTAMPTZ DEFAULT NOW()
 );
 
@@ -191,7 +200,7 @@ CREATE TABLE messages (
 
 -- 用户积分表
 CREATE TABLE user_points (
-    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    id VARCHAR(50) PRIMARY KEY,
     user_id VARCHAR(50) UNIQUE NOT NULL REFERENCES users(id) ON DELETE CASCADE,
     points INTEGER DEFAULT 0,
     consecutive_days INTEGER DEFAULT 0,
@@ -202,24 +211,24 @@ CREATE TABLE user_points (
 
 -- 积分记录表
 CREATE TABLE point_records (
-    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    id VARCHAR(50) PRIMARY KEY,
     user_id VARCHAR(50) NOT NULL REFERENCES users(id) ON DELETE CASCADE,
     type VARCHAR(20) NOT NULL CHECK (type IN ('signin', 'task', 'exchange', 'reward')),
-    points INTEGER NOT NULL, -- 正数获得，负数消耗
+    points INTEGER NOT NULL,
     description VARCHAR(200),
     created_at TIMESTAMPTZ DEFAULT NOW()
 );
 
 -- 任务表
 CREATE TABLE tasks (
-    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    id VARCHAR(50) PRIMARY KEY,
     name VARCHAR(100) NOT NULL,
     description TEXT,
     type VARCHAR(20) NOT NULL CHECK (type IN ('daily', 'newbie', 'achievement')),
     points INTEGER NOT NULL,
     icon VARCHAR(500),
-    action_type VARCHAR(50), -- 触发动作：publish, like, comment 等
-    action_count INTEGER DEFAULT 1, -- 需要完成的次数
+    action_type VARCHAR(50),
+    action_count INTEGER DEFAULT 1,
     sort_order INTEGER DEFAULT 0,
     status VARCHAR(20) DEFAULT 'active',
     created_at TIMESTAMPTZ DEFAULT NOW()
@@ -227,12 +236,12 @@ CREATE TABLE tasks (
 
 -- 用户任务完成记录
 CREATE TABLE user_tasks (
-    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    id VARCHAR(50) PRIMARY KEY,
     user_id VARCHAR(50) NOT NULL REFERENCES users(id) ON DELETE CASCADE,
-    task_id UUID NOT NULL REFERENCES tasks(id) ON DELETE CASCADE,
+    task_id VARCHAR(50) NOT NULL REFERENCES tasks(id) ON DELETE CASCADE,
     progress INTEGER DEFAULT 0,
     completed BOOLEAN DEFAULT FALSE,
-    claimed BOOLEAN DEFAULT FALSE, -- 是否已领取奖励
+    claimed BOOLEAN DEFAULT FALSE,
     completed_at TIMESTAMPTZ,
     created_at TIMESTAMPTZ DEFAULT NOW(),
     UNIQUE(user_id, task_id)
@@ -240,7 +249,7 @@ CREATE TABLE user_tasks (
 
 -- 积分商品表
 CREATE TABLE point_goods (
-    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    id VARCHAR(50) PRIMARY KEY,
     name VARCHAR(100) NOT NULL,
     description TEXT,
     image VARCHAR(500),
@@ -253,9 +262,9 @@ CREATE TABLE point_goods (
 
 -- 积分兑换记录
 CREATE TABLE point_exchanges (
-    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    id VARCHAR(50) PRIMARY KEY,
     user_id VARCHAR(50) NOT NULL REFERENCES users(id) ON DELETE CASCADE,
-    goods_id UUID NOT NULL REFERENCES point_goods(id),
+    goods_id VARCHAR(50) NOT NULL REFERENCES point_goods(id),
     points INTEGER NOT NULL,
     status VARCHAR(20) DEFAULT 'pending' CHECK (status IN ('pending', 'completed', 'cancelled')),
     created_at TIMESTAMPTZ DEFAULT NOW()
@@ -267,7 +276,7 @@ CREATE TABLE point_exchanges (
 
 -- 钱包表
 CREATE TABLE wallets (
-    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    id VARCHAR(50) PRIMARY KEY,
     user_id VARCHAR(50) UNIQUE NOT NULL REFERENCES users(id) ON DELETE CASCADE,
     balance DECIMAL(10, 2) DEFAULT 0.00,
     frozen_amount DECIMAL(10, 2) DEFAULT 0.00,
@@ -277,33 +286,37 @@ CREATE TABLE wallets (
 
 -- 交易记录表
 CREATE TABLE transactions (
-    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    id VARCHAR(50) PRIMARY KEY,
     user_id VARCHAR(50) NOT NULL REFERENCES users(id) ON DELETE CASCADE,
     type VARCHAR(20) NOT NULL CHECK (type IN ('income', 'expense', 'recharge', 'withdraw')),
     title VARCHAR(100) NOT NULL,
     amount DECIMAL(10, 2) NOT NULL,
-    balance DECIMAL(10, 2) NOT NULL, -- 交易后余额
+    balance DECIMAL(10, 2),
     remark VARCHAR(200),
-    related_id UUID, -- 关联订单ID
-    created_at TIMESTAMPTZ DEFAULT NOW()
+    related_id VARCHAR(50),
+    status VARCHAR(20) DEFAULT 'completed' CHECK (status IN ('pending', 'completed', 'failed')),
+    created_at TIMESTAMPTZ DEFAULT NOW(),
+    updated_at TIMESTAMPTZ DEFAULT NOW()
 );
 
 -- 银行卡表
 CREATE TABLE bank_cards (
-    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    id VARCHAR(50) PRIMARY KEY,
     user_id VARCHAR(50) NOT NULL REFERENCES users(id) ON DELETE CASCADE,
     bank_name VARCHAR(50) NOT NULL,
-    card_number VARCHAR(30) NOT NULL, -- 加密存储
-    card_number_mask VARCHAR(30), -- 脱敏显示 ****8888
     card_type VARCHAR(20) DEFAULT '储蓄卡',
+    card_number VARCHAR(30) NOT NULL,
+    card_number_mask VARCHAR(30),
     holder_name VARCHAR(50),
     is_default BOOLEAN DEFAULT FALSE,
-    created_at TIMESTAMPTZ DEFAULT NOW()
+    bg_color VARCHAR(200) DEFAULT 'linear-gradient(135deg, #ff6b6b 0%, #ff8e8e 100%)',
+    created_at TIMESTAMPTZ DEFAULT NOW(),
+    updated_at TIMESTAMPTZ DEFAULT NOW()
 );
 
 -- 优惠券表
 CREATE TABLE coupons (
-    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    id VARCHAR(50) PRIMARY KEY,
     user_id VARCHAR(50) NOT NULL REFERENCES users(id) ON DELETE CASCADE,
     name VARCHAR(100) NOT NULL,
     description TEXT,
@@ -322,7 +335,7 @@ CREATE TABLE coupons (
 
 -- 草稿表
 CREATE TABLE drafts (
-    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    id VARCHAR(50) PRIMARY KEY,
     user_id VARCHAR(50) NOT NULL REFERENCES users(id) ON DELETE CASCADE,
     content TEXT,
     images JSONB DEFAULT '[]',
@@ -338,7 +351,7 @@ CREATE TABLE drafts (
 
 -- 轮播图表
 CREATE TABLE banners (
-    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    id VARCHAR(50) PRIMARY KEY,
     image VARCHAR(500) NOT NULL,
     link VARCHAR(500),
     title VARCHAR(100),
@@ -349,9 +362,9 @@ CREATE TABLE banners (
     created_at TIMESTAMPTZ DEFAULT NOW()
 );
 
--- 搜索记录表（用于热门搜索统计）
+-- 搜索记录表
 CREATE TABLE search_history (
-    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    id VARCHAR(50) PRIMARY KEY,
     keyword VARCHAR(100) NOT NULL,
     count INTEGER DEFAULT 1,
     last_searched_at TIMESTAMPTZ DEFAULT NOW()
@@ -386,12 +399,12 @@ CREATE INDEX idx_likes_target ON likes(target_id, target_type);
 CREATE INDEX idx_bookmarks_user ON bookmarks(user_id, created_at DESC);
 
 -- 评论表索引
-CREATE INDEX idx_comments_target ON comments(target_id, target_type, created_at DESC);
-CREATE INDEX idx_comments_parent ON comments(parent_id);
+CREATE INDEX idx_comments_feed ON comments(feed_id, created_at DESC);
 CREATE INDEX idx_comments_user ON comments(user_id);
+CREATE INDEX idx_comments_parent ON comments(parent_id);
 
 -- 消息表索引
-CREATE INDEX idx_messages_user ON messages(user_id, read, created_at DESC);
+CREATE INDEX idx_messages_user ON messages(user_id, is_read, created_at DESC);
 CREATE INDEX idx_messages_type ON messages(user_id, type, created_at DESC);
 
 -- 积分记录索引
@@ -476,34 +489,3 @@ $$ LANGUAGE plpgsql;
 CREATE TRIGGER trigger_update_like_counts
     AFTER INSERT OR DELETE ON likes
     FOR EACH ROW EXECUTE FUNCTION update_like_counts();
-
--- =====================================================
--- 初始化数据
--- =====================================================
-
--- 默认话题
-INSERT INTO topics (name, description, bg_color, count) VALUES
-    ('春日摄影', '记录春天的美好瞬间', '#FFE4E1', 2341),
-    ('美食探店', '发现身边的美食', '#E6F3FF', 1856),
-    ('旅行日记', '分享旅途中的风景', '#E8F5E9', 3421),
-    ('萌宠日常', '可爱宠物大集合', '#FFF3E0', 4523),
-    ('穿搭分享', '时尚穿搭灵感', '#F3E5F5', 2134),
-    ('生活记录', '记录生活的点滴', '#E0F7FA', 5632);
-
--- 默认分类
-INSERT INTO categories (name, icon, sort_order) VALUES
-    ('推荐', '', 1),
-    ('热门', '', 2),
-    ('风景', '', 3),
-    ('人像', '', 4),
-    ('美食', '', 5),
-    ('街拍', '', 6);
-
--- 默认任务
-INSERT INTO tasks (name, description, type, points, action_type, action_count) VALUES
-    ('每日签到', '每天登录签到获得积分', 'daily', 10, 'signin', 1),
-    ('发布作品', '发布一篇动态', 'daily', 5, 'publish', 1),
-    ('首次点赞', '给喜欢的作品点赞', 'newbie', 5, 'like', 1),
-    ('首次评论', '发表评论与其他用户互动', 'newbie', 5, 'comment', 1),
-    ('累计发布10篇', '发布10篇动态', 'achievement', 50, 'publish', 10),
-    ('获得100个赞', '累计获得100个赞', 'achievement', 100, 'receive_like', 100);

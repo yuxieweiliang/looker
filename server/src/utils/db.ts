@@ -1,16 +1,11 @@
 import { Pool, PoolClient } from 'pg'
+import dotenv from 'dotenv'
+import path from 'path'
 import { logger } from './logger'
 
-console.log({
-  host: process.env.DB_HOST || 'localhost',
-  port: parseInt(process.env.DB_PORT || '5432'),
-  database: process.env.DB_NAME || 'looker',
-  user: process.env.DB_USER || 'looker',
-  password: process.env.DB_PASSWORD || '3342',
-  max: 20,
-  idleTimeoutMillis: 30000,
-  connectionTimeoutMillis: 2000,
-})
+// 加载环境变量 - 指定 .env 文件路径
+dotenv.config({ path: path.join(__dirname, '../../.env') })
+
 /**
  * PostgreSQL 数据库连接池
  */

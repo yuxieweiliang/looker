@@ -14,9 +14,10 @@ import type { ApiResponse, PaginationData } from '../types'
 interface TopicItem {
   id: string
   name: string
-  description: string
+  cover: string
+  category: string
   count: number
-  bgColor: string
+  description: string
   isFollowed: boolean
 }
 
@@ -46,12 +47,13 @@ export class TopicController {
     const topics = await query<{
       id: string
       name: string
+      cover: string
+      category: string
       description: string
       count: number
-      bg_color: string
       is_followed: boolean
     }>(
-      `SELECT t.id, t.name, t.description, t.count, t.bg_color,
+      `SELECT t.id, t.name, t.cover, t.category, t.description, t.count,
               EXISTS(SELECT 1 FROM topic_follows WHERE user_id = $1 AND topic_id = t.id) as is_followed
        FROM topics t
        ${orderClause}
@@ -64,9 +66,10 @@ export class TopicController {
     const list = topics.map(t => ({
       id: t.id,
       name: t.name,
+      cover: t.cover,
+      category: t.category,
       description: t.description,
       count: t.count,
-      bgColor: t.bg_color,
       isFollowed: t.is_followed,
     }))
 
@@ -86,12 +89,13 @@ export class TopicController {
     const topic = await queryOne<{
       id: string
       name: string
+      cover: string
+      category: string
       description: string
       count: number
-      bg_color: string
       is_followed: boolean
     }>(
-      `SELECT t.id, t.name, t.description, t.count, t.bg_color,
+      `SELECT t.id, t.name, t.cover, t.category, t.description, t.count,
               EXISTS(SELECT 1 FROM topic_follows WHERE user_id = $1 AND topic_id = t.id) as is_followed
        FROM topics t
        WHERE t.name = $2`,
@@ -105,9 +109,10 @@ export class TopicController {
     return success({
       id: topic.id,
       name: topic.name,
+      cover: topic.cover,
+      category: topic.category,
       description: topic.description,
       count: topic.count,
-      bgColor: topic.bg_color,
       isFollowed: topic.is_followed,
     })
   }

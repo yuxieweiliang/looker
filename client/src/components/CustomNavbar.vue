@@ -58,7 +58,13 @@ const innerStyle = computed(() => ({
 const onBack = (e?: Event) => {
   if (props.showBack) {
     emit('back')
-    uni.navigateBack()
+    const pages = getCurrentPages()
+    if (pages.length > 1) {
+      uni.navigateBack()
+    } else {
+      // 浏览器环境或页面栈为空时，跳转首页
+      uni.reLaunch({ url: '/pages/home/home' })
+    }
   }
 }
 </script>

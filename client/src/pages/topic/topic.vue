@@ -1,326 +1,230 @@
 <template>
   <view class="page-container" :style="{ paddingTop: navbarHeight + 'px' }">
-    <CustomNavbar title="话题" :show-back="false" />
+    <CustomNavbar title="话题">
+      <template #right>
+        <view class="create-btn" @click="goToTopicCreate">
+          <AppIcon name="plus" size="44rpx" color="#333" />
+        </view>
+      </template>
+    </CustomNavbar>
 
-    <!-- 上传区域 -->
-    <view class="upload-section">
-      <view class="upload-title">
-        <text class="title-text">分享你的精彩瞬间</text>
-        <text class="title-sub">支持图片、视频上传</text>
-      </view>
-
-      <view class="upload-grid">
-        <view
-          v-for="(file, index) in fileList"
-          :key="index"
-          class="upload-item"
-        >
-          <image
-            :src="file.url"
-            mode="aspectFill"
-            class="upload-image"
-            @click="previewImage(index)"
-          />
-          <view class="delete-btn" @click="deleteFile(index)">
-            <AppIcon name="cross" size="24rpx" color="#fff" />
+    <!-- 内容区域 -->
+    <scroll-view
+      scroll-y
+      class="content-scroll"
+      :style="scrollStyle"
+      @scrolltolower="onLoadMore"
+      :refresher-enabled="true"
+      :refresher-triggered="refreshing"
+      @refresherrefresh="onRefresh"
+    >
+      <!-- 分类标签 -->
+      <scroll-view scroll-x class="category-scroll" :show-scrollbar="false">
+        <view class="category-list">
+          <view
+            v-for="(cat, index) in categories"
+            :key="index"
+            class="category-item"
+            :class="{ active: currentCategory === index }"
+            @click="onCategoryClick(index)"
+          >
+            <text class="category-name">{{ cat.name }}</text>
           </view>
         </view>
+      </scroll-view>
 
-        <view
-          v-if="fileList.length < maxCount"
-          class="upload-add"
-          @click="chooseMedia"
+      <!-- 筛选标签 -->
+      <view class="filter-tabs">
+        <text
+          v-for="(tab, index) in filterTabs"
+          :key="index"
+          class="filter-tab"
+          :class="{ active: currentFilter === index }"
+          @click="onFilterClick(index)"
         >
-          <AppIcon name="plus" size="48rpx" color="#ccc" />
-          <text class="add-text">添加</text>
-        </view>
-      </view>
-
-      <text class="upload-tip">最多可上传 9 张图片</text>
-    </view>
-
-    <!-- 内容编辑 -->
-    <view class="content-section">
-      <textarea
-        v-model="content"
-        class="content-input"
-        placeholder="写下你的想法..."
-        maxlength="500"
-        auto-height
-      />
-      <text class="word-count">{{ content.length }}/500</text>
-    </view>
-
-    <!-- 位置信息 -->
-    <view class="location-section" @click="chooseLocation">
-      <view class="location-left">
-        <AppIcon name="location-o" size="40rpx" color="#ff6b6b" />
-        <text class="location-text">
-          {{ location.name || '添加位置' }}
+          {{ tab }}
         </text>
       </view>
-      <AppIcon name="arrow" size="32rpx" color="#999" />
-    </view>
 
-    <!-- 话题选择 -->
-    <view class="topic-select-section" @click="goToTopicSelect">
-      <view class="topic-select-header">
-        <text class="section-label">选择话题</text>
-        <AppIcon name="arrow" size="32rpx" color="#999" />
-      </view>
-      <view class="selected-topics" v-if="topics.length > 0">
-        <view
-          v-for="(topic, index) in topics"
-          :key="index"
-          class="topic-tag"
-        >
-          <image v-if="topic.cover" class="topic-cover-mini" :src="topic.cover" mode="aspectFill" />
-          <text>#{{ topic.name }}</text>
-          <AppIcon
-            name="cross"
-            size="20rpx"
-            color="#ff6b6b"
-            @click.stop="removeTopic(index)"
-          />
+      <!-- 话题列表 -->
+      <view class="topics-section">
+        <view class="topics-list" v-if="topicList.length > 0">
+          <view
+            v-for="topic in topicList"
+            :key="topic.id"
+            class="topic-item"
+            @click="goToTopicDetail(topic)"
+          >
+            <image v-if="topic.cover" class="topic-cover" :src="topic.cover" mode="aspectFill" />
+            <view class="topic-content">
+              <view class="topic-header">
+                <text class="topic-name">#{{ topic.name }}</text>
+                <view v-if="topic.isFollowed" class="followed-tag">
+                  <text>已关注</text>
+                </view>
+              </view>
+              <text class="topic-desc">{{ topic.description }}</text>
+              <view class="topic-meta">
+                <text class="topic-count">{{ topic.count }} 动态</text>
+                <text class="topic-category">{{ topic.category }}</text>
+              </view>
+            </view>
+          </view>
+        </view>
+        <view v-else class="empty-state">
+          <text>暂无话题</text>
+        </view>
+
+        <!-- 加载状态 -->
+        <view class="load-more">
+          <AppLoading v-if="loading" type="spinner" size="32rpx" />
+          <text v-else-if="!hasMore && topicList.length > 0" class="no-more">没有更多了</text>
         </view>
       </view>
-      <text v-else class="topic-placeholder">点击选择话题</text>
-    </view>
+    </scroll-view>
 
-    <!-- 发布按钮 -->
-    <view class="publish-section">
-      <button
-        class="publish-button"
-        @click="onPublish"
-      >
-        {{ currentDraftId ? '重新发布' : '发布' }}
-      </button>
+    <!-- 发布入口 -->
+    <view class="publish-fab" @click="goToPublish">
+      <AppIcon name="edit" size="48rpx" color="#fff" />
     </view>
   </view>
 </template>
 
 <script setup lang="ts">
-import AppIcon from "../../components/AppIcon.vue"
-import { ref, computed } from 'vue'
-import { onShow, onLoad } from '@dcloudio/uni-app'
-import { useSystemInfo, showToast } from '../../utils/uniapi'
+import { ref, computed, onMounted } from 'vue'
+import { useSystemInfo } from '../../utils/uniapi'
 import CustomNavbar from '../../components/CustomNavbar.vue'
+import AppLoading from '../../components/AppLoading.vue'
+import AppIcon from '../../components/AppIcon.vue'
 
 const { navbarHeight } = useSystemInfo()
 
-interface FileItem {
-  url: string
-  type: 'image' | 'video'
-  size?: number
-}
-
-interface Location {
-  name: string
-  address: string
-  latitude: number
-  longitude: number
-}
-
-interface DraftItem {
+interface TopicItem {
   id: string
-  title: string
-  content: string
-  images: string[]
-  saveTime: number
-  topicId?: string
+  name: string
+  cover?: string
+  description: string
+  count: number
+  category: string
+  isFollowed: boolean
 }
 
-const fileList = ref<FileItem[]>([])
-const content = ref('')
-const location = ref<Partial<Location>>({})
-const topics = ref<Array<{name: string; cover?: string; desc?: string; category?: string}>>([])
-const maxCount = 9
+// 分类数据
+const categories = ref([
+  { id: '1', name: '推荐' },
+  { id: '2', name: '风景' },
+  { id: '3', name: '美食' },
+  { id: '4', name: '人像' },
+  { id: '5', name: '萌宠' },
+  { id: '6', name: '旅行' },
+  { id: '7', name: '街拍' },
+  { id: '8', name: '建筑' },
+])
+
+// 筛选标签
+const filterTabs = ['热门', '最新', '关注']
+const currentCategory = ref(0)
+const currentFilter = ref(0)
+
+// 话题列表数据
+const topicList = ref<TopicItem[]>([])
 const loading = ref(false)
-const currentDraftId = ref<string>('')
+const refreshing = ref(false)
+const hasMore = ref(true)
+const page = ref(1)
 
-const canPublish = computed(() => {
-  return fileList.value.length > 0 && content.value.trim().length > 0 && !loading.value
-})
+// 滚动区域样式
+const scrollStyle = computed(() => ({
+  height: 'calc(100vh - 88rpx - env(safe-area-inset-top))'
+}))
 
-// 加载草稿数据
-onLoad((options) => {
-  if (options?.draftId) {
-    currentDraftId.value = options.draftId as string
-    loadDraft(options.draftId as string)
-  }
-})
-
-// 从本地存储加载草稿
-const loadDraft = (draftId: string) => {
-  // 模拟从本地存储获取草稿数据
-  const mockDrafts: DraftItem[] = [
-    {
-      id: '1',
-      title: '周末的摄影之旅',
-      content: '今天去了公园拍摄，天气很好...',
-      images: ['https://picsum.photos/400/400?random=1'],
-      saveTime: Date.now() - 2 * 24 * 60 * 60 * 1000,
-    },
-    {
-      id: '2',
-      title: '',
-      content: '分享一个美食食谱，需要准备以下材料...',
-      images: [],
-      saveTime: Date.now() - 15 * 24 * 60 * 60 * 1000,
-    },
-    {
-      id: '3',
-      title: '旅行日记 - 云南',
-      content: '',
-      images: [
-        'https://picsum.photos/400/400?random=2',
-        'https://picsum.photos/400/400?random=3',
-      ],
-      saveTime: Date.now() - 25 * 24 * 60 * 60 * 1000,
-    },
-  ]
-
-  const draft = mockDrafts.find(d => d.id === draftId)
-  if (draft) {
-    content.value = draft.content
-    if (draft.images.length > 0) {
-      fileList.value = draft.images.map(url => ({
-        url,
-        type: 'image' as const,
-      }))
-    }
-    showToast('已加载草稿', 'success')
-  }
-}
-
-// 删除已发布的草稿
-const deletePublishedDraft = () => {
-  if (!currentDraftId.value) return
-  console.log('删除已发布草稿:', currentDraftId.value)
-  // 实际项目中从本地存储删除
-  // const draftList = uni.getStorageSync('draftList') || []
-  // const newList = draftList.filter((item: DraftItem) => item.id !== currentDraftId.value)
-  // uni.setStorageSync('draftList', newList)
-}
-
-const chooseMedia = () => {
-  uni.chooseMedia({
-    count: maxCount - fileList.value.length,
-    mediaType: ['image'],
-    sourceType: ['album', 'camera'],
-    success: (res) => {
-      const files = res.tempFiles.map(file => ({
-        url: file.tempFilePath,
-        type: 'image' as const,
-        size: file.size,
-      }))
-      fileList.value.push(...files)
-    },
-  })
-}
-
-const previewImage = (index: number) => {
-  const urls = fileList.value.map(f => f.url)
-  uni.previewImage({
-    urls,
-    current: urls[index],
-  })
-}
-
-const deleteFile = (index: number) => {
-  fileList.value.splice(index, 1)
-}
-
-const chooseLocation = () => {
-  uni.navigateTo({
-    url: '/pages/topic/location-select'
-  })
-}
-
-const goToTopicSelect = () => {
-  const topicsParam = encodeURIComponent(JSON.stringify(topics.value))
-  uni.navigateTo({
-    url: `/pages/topic/topic-select?selected=${topicsParam}`
-  })
-}
-
-const removeTopic = (index: number) => {
-  topics.value.splice(index, 1)
-}
-
-onShow(() => {
-  const pages = getCurrentPages()
-  const currentPage = pages[pages.length - 1] as any
-  const eventChannel = currentPage.getOpenerEventChannel && currentPage.getOpenerEventChannel()
-
-  if (eventChannel) {
-    eventChannel.on('selectedTopics', (data: { topics: Array<{name: string; cover?: string; desc?: string; category?: string}> }) => {
-      if (data && data.topics) {
-        topics.value = data.topics
-      }
-    })
-  }
-})
-
-const onPublish = async () => {
-  // 表单验证
-  if (fileList.value.length === 0) {
-    uni.showToast({
-      title: '请至少上传一张图片',
-      icon: 'none',
-    })
-    return
-  }
-
-  if (content.value.trim().length === 0) {
-    uni.showToast({
-      title: '请写下你的想法',
-      icon: 'none',
-    })
-    return
-  }
-
+// 获取话题列表数据
+const fetchTopics = async (isRefresh = false) => {
   if (loading.value) return
-
   loading.value = true
-  uni.showLoading({ title: '发布中...' })
 
   try {
-    // 模拟上传
-    await new Promise(resolve => setTimeout(resolve, 1500))
+    // 模拟数据
+    const mockTopics: TopicItem[] = [
+      { id: '1', name: '春日摄影', cover: 'https://picsum.photos/200/200?random=topic1', description: '记录春天的美好瞬间', count: 2341, category: '风景', isFollowed: false },
+      { id: '2', name: '美食探店', cover: 'https://picsum.photos/200/200?random=topic2', description: '发现身边的美味', count: 1856, category: '美食', isFollowed: true },
+      { id: '3', name: '旅行日记', cover: 'https://picsum.photos/200/200?random=topic3', description: '分享旅途风景', count: 3421, category: '旅行', isFollowed: false },
+      { id: '4', name: '萌宠日常', cover: 'https://picsum.photos/200/200?random=topic4', description: '铲屎官的日常', count: 4523, category: '萌宠', isFollowed: false },
+      { id: '5', name: '穿搭分享', cover: 'https://picsum.photos/200/200?random=topic5', description: '每日穿搭灵感', count: 2134, category: '时尚', isFollowed: true },
+      { id: '6', name: '生活记录', cover: 'https://picsum.photos/200/200?random=topic6', description: '记录生活点滴', count: 1876, category: '生活', isFollowed: false },
+      { id: '7', name: '人像摄影', cover: 'https://picsum.photos/200/200?random=topic7', description: '人像摄影技巧分享', count: 1280, category: '摄影', isFollowed: false },
+      { id: '8', name: '街拍摄影', cover: 'https://picsum.photos/200/200?random=topic8', description: '街头人文纪实', count: 980, category: '摄影', isFollowed: false },
+    ]
 
-    // 如果是从草稿箱发布的，删除对应草稿
-    if (currentDraftId.value) {
-      deletePublishedDraft()
+    if (isRefresh) {
+      topicList.value = mockTopics
+    } else {
+      topicList.value.push(...mockTopics)
     }
 
-    uni.hideLoading()
-    uni.showToast({
-      title: '发布成功',
-      icon: 'success',
-    })
-
-    // 清空表单
-    fileList.value = []
-    content.value = ''
-    topics.value = []
-    location.value = {}
-    currentDraftId.value = ''
-
-    // 切换到首页
-    setTimeout(() => {
-      uni.switchTab({ url: '/pages/home/home' })
-    }, 1500)
-  } catch (error) {
-    uni.hideLoading()
-    uni.showToast({
-      title: '发布失败，请重试',
-      icon: 'none',
-    })
+    page.value++
+    hasMore.value = page.value <= 3 // 模拟3页数据
+  } catch (err) {
+    console.error('获取话题列表失败', err)
   } finally {
     loading.value = false
+    refreshing.value = false
   }
 }
+
+// 下拉刷新
+const onRefresh = () => {
+  refreshing.value = true
+  page.value = 1
+  fetchTopics(true)
+}
+
+// 上拉加载
+const onLoadMore = () => {
+  if (!hasMore.value || loading.value) return
+  fetchTopics()
+}
+
+// 分类点击
+const onCategoryClick = (index: number) => {
+  currentCategory.value = index
+  page.value = 1
+  topicList.value = []
+  fetchTopics(true)
+}
+
+// 筛选切换
+const onFilterClick = (index: number) => {
+  currentFilter.value = index
+  page.value = 1
+  topicList.value = []
+  fetchTopics(true)
+}
+
+// 话题点击 - 跳转到话题详情
+const goToTopicDetail = (topic: TopicItem) => {
+  uni.navigateTo({
+    url: `/pages/detail/detail?id=${topic.id}&type=topic`,
+  })
+}
+
+// 跳转创建话题
+const goToTopicCreate = () => {
+  uni.navigateTo({
+    url: '/pages/topic/topic-create'
+  })
+}
+
+// 跳转发布页面
+const goToPublish = () => {
+  uni.navigateTo({
+    url: '/pages/topic/publish'
+  })
+}
+
+onMounted(() => {
+  fetchTopics()
+})
 </script>
 
 <style lang="scss" scoped>
@@ -329,192 +233,199 @@ const onPublish = async () => {
   background: #f5f5f5;
 }
 
-.upload-section {
-  background: #fff;
-  padding: 30rpx;
-  margin-bottom: 20rpx;
+.create-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 64rpx;
+  height: 64rpx;
 }
 
-.upload-title {
-  margin-bottom: 30rpx;
+.content-scroll {
+  box-sizing: border-box;
+}
 
-  .title-text {
-    font-size: 36rpx;
+// 分类
+.category-scroll {
+  white-space: nowrap;
+  padding: 20rpx 0;
+  background: #fff;
+}
+
+.category-list {
+  display: flex;
+  padding: 0 20rpx;
+}
+
+.category-item {
+  padding: 16rpx 32rpx;
+  border-radius: 32rpx;
+  margin-right: 16rpx;
+  transition: all 0.3s ease;
+  background: #f5f5f5;
+
+  &.active {
+    background: linear-gradient(135deg, #ff6b6b 0%, #ff8e8e 100%);
+    color: #fff;
     font-weight: 600;
-    color: #333;
-    display: block;
-    margin-bottom: 10rpx;
   }
 
-  .title-sub {
-    font-size: 26rpx;
+  .category-name {
+    font-size: 28rpx;
+    color: #666;
+  }
+
+  &.active .category-name {
+    color: #fff;
+  }
+}
+
+// 筛选标签
+.filter-tabs {
+  display: flex;
+  background: #fff;
+  padding: 20rpx 30rpx;
+  gap: 20rpx;
+}
+
+.filter-tab {
+  font-size: 28rpx;
+  color: #999;
+  padding: 12rpx 24rpx;
+  border-radius: 30rpx;
+  transition: all 0.3s ease;
+
+  &.active {
+    background: rgba(255, 107, 107, 0.1);
+    color: #ff6b6b;
+    font-weight: 600;
+  }
+}
+
+// 话题列表
+.topics-section {
+  padding: 20rpx;
+}
+
+.topics-list {
+  display: flex;
+  flex-direction: column;
+  gap: 20rpx;
+}
+
+.topic-item {
+  display: flex;
+  background: #fff;
+  border-radius: 16rpx;
+  overflow: hidden;
+  padding: 24rpx;
+  box-shadow: 0 2rpx 12rpx rgba(0, 0, 0, 0.05);
+}
+
+.topic-cover {
+  width: 160rpx;
+  height: 160rpx;
+  border-radius: 12rpx;
+  flex-shrink: 0;
+}
+
+.topic-content {
+  flex: 1;
+  margin-left: 24rpx;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+}
+
+.topic-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.topic-name {
+  font-size: 32rpx;
+  font-weight: 600;
+  color: #333;
+}
+
+.followed-tag {
+  background: rgba(255, 107, 107, 0.1);
+  color: #ff6b6b;
+  font-size: 22rpx;
+  padding: 6rpx 16rpx;
+  border-radius: 20rpx;
+}
+
+.topic-desc {
+  font-size: 26rpx;
+  color: #666;
+  margin-top: 12rpx;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.topic-meta {
+  display: flex;
+  align-items: center;
+  gap: 16rpx;
+  margin-top: 16rpx;
+}
+
+.topic-count {
+  font-size: 24rpx;
+  color: #999;
+}
+
+.topic-category {
+  font-size: 22rpx;
+  color: #fff;
+  background: rgba(255, 107, 107, 0.6);
+  padding: 4rpx 12rpx;
+  border-radius: 12rpx;
+}
+
+// 空状态
+.empty-state {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 100rpx 0;
+
+  text {
+    font-size: 28rpx;
     color: #999;
   }
 }
 
-.upload-grid {
+// 加载更多
+.load-more {
   display: flex;
-  flex-wrap: wrap;
-  gap: 20rpx;
+  align-items: center;
+  justify-content: center;
+  padding: 40rpx;
 }
 
-.upload-item {
-  position: relative;
-  width: 200rpx;
-  height: 200rpx;
-  border-radius: 12rpx;
-  overflow: hidden;
+.no-more {
+  font-size: 26rpx;
+  color: #999;
 }
 
-.upload-image {
-  width: 100%;
-  height: 100%;
-}
-
-.delete-btn {
-  position: absolute;
-  top: 10rpx;
-  right: 10rpx;
-  width: 40rpx;
-  height: 40rpx;
-  background: rgba(0, 0, 0, 0.5);
+// 发布悬浮按钮
+.publish-fab {
+  position: fixed;
+  right: 40rpx;
+  bottom: 120rpx;
+  width: 100rpx;
+  height: 100rpx;
+  background: linear-gradient(135deg, #ff6b6b 0%, #ff8e8e 100%);
   border-radius: 50%;
   display: flex;
   align-items: center;
   justify-content: center;
-}
-
-.upload-add {
-  width: 200rpx;
-  height: 200rpx;
-  border: 2rpx dashed #ddd;
-  border-radius: 12rpx;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-
-  .add-text {
-    font-size: 24rpx;
-    color: #999;
-    margin-top: 10rpx;
-  }
-}
-
-.upload-tip {
-  font-size: 24rpx;
-  color: #999;
-  margin-top: 20rpx;
-  display: block;
-}
-
-.content-section {
-  background: #fff;
-  padding: 30rpx;
-  margin-bottom: 20rpx;
-  position: relative;
-}
-
-.content-input {
-  width: 100%;
-  min-height: 200rpx;
-  font-size: 30rpx;
-  line-height: 1.6;
-}
-
-.word-count {
-  position: absolute;
-  right: 30rpx;
-  bottom: 30rpx;
-  font-size: 24rpx;
-  color: #999;
-}
-
-.location-section {
-  background: #fff;
-  padding: 30rpx;
-  margin-bottom: 20rpx;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-}
-
-.location-left {
-  display: flex;
-  align-items: center;
-
-  .location-text {
-    margin-left: 16rpx;
-    font-size: 28rpx;
-    color: #333;
-  }
-}
-
-.topic-select-section {
-  background: #fff;
-  padding: 30rpx;
-  margin-bottom: 20rpx;
-}
-
-.topic-select-header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  margin-bottom: 20rpx;
-}
-
-.section-label {
-  font-size: 28rpx;
-  color: #333;
-  font-weight: 500;
-}
-
-.selected-topics {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 16rpx;
-}
-
-.topic-placeholder {
-  font-size: 28rpx;
-  color: #999;
-}
-
-.topic-tag {
-  display: flex;
-  align-items: center;
-  gap: 8rpx;
-  background: rgba(255, 107, 107, 0.1);
-  color: #ff6b6b;
-  padding: 12rpx 20rpx;
-  border-radius: 8rpx;
-  font-size: 26rpx;
-
-  .topic-cover-mini {
-    width: 32rpx;
-    height: 32rpx;
-    border-radius: 4rpx;
-  }
-}
-
-.publish-section {
-  padding: 40rpx;
-  display: flex;
-  justify-content: center;
-}
-
-.publish-button {
-  width: 100%;
-  height: 88rpx;
-  background: linear-gradient(135deg, #ff6b6b 0%, #ff8e8e 100%);
-  color: #fff;
-  font-size: 32rpx;
-  font-weight: 600;
-  border-radius: 44rpx;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  transition: all 0.3s ease;
-  box-shadow: 0 8rpx 20rpx rgba(255, 107, 107, 0.3);
+  box-shadow: 0 8rpx 24rpx rgba(255, 107, 107, 0.4);
+  z-index: 100;
 }
 </style>

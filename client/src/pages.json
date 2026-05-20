@@ -110,6 +110,13 @@
           }
         },
         {
+          "path": "topic/topic-create",
+          "style": {
+            "navigationBarTitleText": "创建话题",
+            "navigationStyle": "custom"
+          }
+        },
+        {
           "path": "profile/works",
           "style": {
             "navigationBarTitleText": "我的作品",

@@ -26,6 +26,24 @@ export const request = <T>(options: {
       data: options.data as string | AnyObject | ArrayBuffer | undefined,
       header: headers,
       success: (res) => {
+        // 检测 HTTP 状态码 401
+        if (res.statusCode === 401) {
+          uni.removeStorageSync('token')
+          uni.showModal({
+            title: '登录已过期',
+            content: '您的登录状态已过期，请重新登录',
+            confirmText: '去登录',
+            cancelText: '取消',
+            success: (modalRes) => {
+              if (modalRes.confirm) {
+                uni.reLaunch({ url: '/pages/login/login' })
+              }
+            }
+          })
+          reject(new Error('Unauthorized'))
+          return
+        }
+
         const data = res.data as ApiResponse<T>
         if (data.code === 0 || data.code === 200) {
           resolve(data)
